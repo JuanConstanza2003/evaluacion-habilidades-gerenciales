@@ -99,6 +99,7 @@
       const carnet = carnetInput.value.trim();
       showFormError("");
       if (!fullName || !carnet) { showFormError("Escribe tu nombre completo y carné."); return; }
+      if (!/^\d{10,}$/.test(carnet.replace(/\s+/g, ""))) { showFormError("El carné debe contener al menos 10 dígitos numéricos, sin letras ni símbolos."); carnetInput.focus(); return; }
       submit.disabled = true;
       try {
         if (getToken()) {

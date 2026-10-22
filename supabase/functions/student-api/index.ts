@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     if (action === "register") {
       const fullName = String(body.full_name ?? "").trim().replace(/\s+/g, " ");
       const carnet = normalizeCarnet(body.carnet);
-      if (fullName.length < 3 || fullName.length > 120 || !carnet || carnet.length > 40) return response({ error: "INVALID_REGISTRATION", message: "Revisa tu nombre completo y carné." }, 400);
+      if (fullName.length < 3 || fullName.length > 120 || !/^\d{10,}$/.test(carnet) || carnet.length > 40) return response({ error: "INVALID_REGISTRATION", message: "El nombre debe tener entre 3 y 120 caracteres y el carné debe contener al menos 10 dígitos numéricos, sin letras ni símbolos (máximo 40 dígitos)." }, 400);
       const tokenBytes = crypto.getRandomValues(new Uint8Array(32));
       const token = [...tokenBytes].map((b) => b.toString(16).padStart(2, "0")).join("");
       const tokenHash = await sha256(token);
