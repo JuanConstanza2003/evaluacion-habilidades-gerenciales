@@ -68,19 +68,55 @@
     if (formMode) showFormError(message); else notify.error(message);
   }
 
-  // Registro: el servidor normaliza el carné, evita duplicados y crea una sesión aleatoria.
+  // La página inicial siempre muestra el registro. Una sesión incompleta puede retomarse
+  // en el mismo dispositivo tras validar nombre/carné; una sesión finalizada nunca reabre la nota.
   const regForm = document.querySelector("#registration-form");
   if (regForm) {
-    if (getToken()) api("progress").then(() => { location.href = "progreso.html"; }).catch(() => clearToken());
+    const nameInput = document.querySelector("#full-name");
+    const carnetInput = document.querySelector("#carnet");
+    let existingInProgress = null;
+    if (getToken()) {
+      api("progress").then(state => {
+        if (state.result || state.participant?.status === "submitted") {
+          clearToken(); clearDraft(); existingInProgress = null;
+          showFormError("Esta evaluación ya fue finalizada. Los resultados se muestran al terminar y quedan disponibles únicamente para el equipo administrativo.");
+          return;
+        }
+        if (state.participant && state.participant.status === "in_progress") {
+          existingInProgress = { carnet: String(state.participant.carnet || "").trim().toUpperCase().replace(/\s+/g, ""), fullName: String(state.participant.full_name || "").trim().replace(/\s+/g, " ").toLowerCase() };
+          nameInput.value = state.participant.full_name || "";
+          carnetInput.value = state.participant.carnet || "";
+          const submit = regForm.querySelector('button[type="submit"]');
+          if (submit) submit.innerHTML = 'Continuar evaluación <span aria-hidden="true">→</span>';
+          showFormError("Encontramos una evaluación en progreso en este dispositivo. Confirma tus datos para continuar.");
+        }
+      }).catch(() => { clearToken(); clearDraft(); });
+    }
     regForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const submit = regForm.querySelector('button[type="submit"]');
-      const fullName = document.querySelector("#full-name").value.trim();
-      const carnet = document.querySelector("#carnet").value.trim();
+      const fullName = nameInput.value.trim();
+      const carnet = carnetInput.value.trim();
       showFormError("");
       if (!fullName || !carnet) { showFormError("Escribe tu nombre completo y carné."); return; }
       submit.disabled = true;
       try {
+        if (getToken()) {
+          try {
+            const state = await api("progress");
+            const sameCarnet = String(carnet).trim().toUpperCase().replace(/\s+/g, "") === String(state.participant?.carnet || "").trim().toUpperCase().replace(/\s+/g, "");
+            const sameName = fullName.replace(/\s+/g, " ").toLowerCase() === String(state.participant?.full_name || "").trim().replace(/\s+/g, " ").toLowerCase();
+            if (state.result || state.participant?.status === "submitted") {
+              clearToken(); clearDraft();
+              showFormError("Esta evaluación ya fue finalizada. No es posible volver a consultar la nota desde el enlace público.");
+              return;
+            }
+            if (state.participant?.status === "in_progress" && sameCarnet && sameName) {
+              location.href = "progreso.html"; return;
+            }
+          } catch (_) { /* Si la sesión dejó de ser válida, se intenta registrar normalmente. */ }
+          clearToken();
+        }
         const result = await api("register", { full_name: fullName, carnet });
         saveToken(result.token);
         clearDraft();
@@ -97,7 +133,7 @@
       if (!getToken()) { location.href = "index.html"; return; }
       let state;
       try { state = await api("progress"); } catch (error) { routeError(error); return; }
-      if (state.result) { location.href = "resultado.html"; return; }
+      if (state.result || state.participant?.status === "submitted") { clearToken(); clearDraft(); location.href = "index.html"; return; }
       const completed = state.completed || [];
       const sections = state.sections || [];
       const nextSection = sections.find(s => !completed.includes(s.id));
@@ -162,7 +198,8 @@
       if (!getToken() || !Number.isInteger(id) || id < 1 || id > 5 || sessionStorage.getItem("hg_unlocked_section") !== String(id)) { location.href = "progreso.html"; return; }
       let state;
       try { state = await api("progress"); } catch (error) { routeError(error); return; }
-      if (state.result || (state.completed || []).includes(id)) { location.href = state.result ? "resultado.html" : "progreso.html"; return; }
+      if (state.result || state.participant?.status === "submitted") { clearToken(); clearDraft(); location.href = "index.html"; return; }
+      if ((state.completed || []).includes(id)) { location.href = "progreso.html"; return; }
       const section = (state.sections || []).find(s => s.id === id);
       if (!section || !section.questions?.length) { notify.error("No se encontró la sección solicitada."); location.href = "progreso.html"; return; }
       document.querySelector("#section-counter").textContent = `${id}/5`;
@@ -232,6 +269,10 @@
         const correctLetter = correctPosition >= 0 ? String.fromCharCode(65 + correctPosition) : "—";
         return `<article class="feedback-card ${q.is_correct ? "feedback-correct" : "feedback-incorrect"}"><div class="feedback-card-top"><span class="feedback-number">Pregunta ${index + 1}</span><span class="feedback-status">${q.is_correct ? "✓ Correcta" : "✕ Incorrecta"}</span></div><p class="feedback-section-name">${escapeHTML((state.sections.find(s => s.id === q.section_id) || {}).title || "Habilidades Gerenciales")}</p><h3>${escapeHTML(q.question_text)}</h3><div class="feedback-answer ${q.is_correct ? "answer-is-correct" : "answer-is-incorrect"}"><span class="answer-label">Tu respuesta · ${chosenLetter}</span><p>${escapeHTML(q.selected_option_text || "No se registró una respuesta.")}</p></div>${!q.is_correct ? `<div class="feedback-answer answer-correct"><span class="answer-label">Respuesta correcta · ${correctLetter}</span><p>${escapeHTML(q.correct_option_text)}</p></div>` : '<p class="feedback-encouragement">¡Muy bien! Seleccionaste la respuesta correcta.</p>'}</article>`;
       }).join("");
+      // The result is a one-time student view; the durable record remains in the admin dashboard.
+      clearToken();
+      clearDraft();
+      sessionStorage.removeItem("hg_unlocked_section");
     })();
   }
 })();

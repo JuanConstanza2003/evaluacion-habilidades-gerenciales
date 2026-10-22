@@ -46,6 +46,14 @@ Deno.serve(async req => {
       const answers=(ar.data??[]).map((a:any)=>({question_id:a.question_id,section_id:a.section_id,section_title:a.questions?.sections?.title??"",question_text:a.questions?.question_text??"",selected_option_id:a.selected_option_id,selected_option_text:texts.get(`${a.question_id}:${a.selected_option_id}`)??"",correct_option_text:texts.get(`${a.question_id}:${keys.get(a.question_id)}`)??"",is_correct:a.is_correct,answered_at:a.answered_at}));
       return out({participant:pr.data,answers,submissions:sr.data??[],unlocks:ur.data??[],audit_logs:lr.data??[]});
     }
-    return out({error:"UNKNOWN_ACTION"},400);
+    if(action==="delete-participant"){
+   if(auth.role!=="admin") return out({error:"FORBIDDEN",message:"Solo un administrador puede eliminar registros."},403);
+   const id=String(body.participant_id??"");
+   if(!/^[0-9a-f-]{36}$/i.test(id)) return out({error:"INVALID_ID",message:"El identificador no es válido."},400);
+   const {data,error}=await db.rpc("admin_delete_participant",{p_participant_id:id,p_actor_user_id:auth.user.id});
+   if(error){console.error("admin delete error",error); if(String(error.message||"").includes("NOT_FOUND")) return out({error:"NOT_FOUND",message:"El participante ya no existe."},404); if(String(error.message||"").includes("FORBIDDEN")) return out({error:"FORBIDDEN",message:"No tienes permisos para eliminar registros."},403); throw error;}
+   return out({ok:true,deleted_participant_id:id});
+  }
+  return out({error:"UNKNOWN_ACTION"},400);
   } catch(e) { console.error("admin-api error",e); return out({error:"INTERNAL_ERROR",message:"No se pudo completar la consulta administrativa."},500); }
 });
