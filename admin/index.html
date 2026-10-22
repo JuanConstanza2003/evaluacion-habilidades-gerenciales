@@ -1,34 +1,13 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b1d4a">
-  <title>Administración | Habilidades Gerenciales</title>
-  <link rel="stylesheet" href="../assets/css/styles.css">
-</head>
-<body>
-  <main class="page-wrap admin-wrap">
-    <header class="topbar">
-      <a class="icon-btn" href="../index.html" aria-label="Ir al inicio">←</a>
-      <div class="mini-crest">Ψ</div>
-      <span class="counter">ADMIN</span>
-    </header>
-    <section class="page-heading">
-      <p class="eyebrow">ÁREA RESTRINGIDA</p>
-      <h1>Panel de <span>administración</span></h1>
-      <p>Esta pantalla se conectará a Supabase Auth y a consultas autorizadas. No habilitar acceso público a resultados.</p>
-    </section>
-    <div class="admin-warning">
-      <strong>Panel pendiente de conexión</strong>
-      <p>El dashboard no consulta datos todavía. La autenticación, los permisos, las gráficas y la exportación se implementarán después de validar el backend.</p>
-    </div>
-    <section class="stats-grid">
-      <article class="stat-card"><span>Participantes</span><strong>—</strong></article>
-      <article class="stat-card"><span>Finalizados</span><strong>—</strong></article>
-      <article class="stat-card"><span>Promedio</span><strong>—/10</strong></article>
-      <article class="stat-card"><span>Pendientes</span><strong>—</strong></article>
-    </section>
-  </main>
-</body>
-</html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0b1d4a"><meta name="description" content="Panel administrativo de la evaluación de habilidades gerenciales"><title>Dashboard | Habilidades Gerenciales</title><link rel="stylesheet" href="../assets/css/styles.css"><link rel="stylesheet" href="./dashboard.css"></head>
+<body><main class="page-wrap admin-wrap dashboard-wrap">
+<header class="topbar"><a class="icon-btn" href="../index.html" aria-label="Ir al inicio">←</a><div class="dash-brand"><div class="mini-crest">Ψ</div><div><span class="eyebrow">HABILIDADES GERENCIALES</span><strong>Panel administrativo</strong></div></div><button id="logout-btn" class="btn btn-outline btn-small hidden" type="button">Cerrar sesión</button></header>
+<section id="login-view" class="login-panel"><p class="eyebrow">ACCESO RESTRINGIDO</p><h1>Bienvenido al <span>dashboard</span></h1><p class="muted">Inicia sesión con la cuenta administrativa autorizada.</p><form id="login-form" class="form-card"><label class="dash-label" for="email">Correo electrónico</label><input class="dash-input" id="email" type="email" autocomplete="username" required placeholder="admin@ejemplo.com"><label class="dash-label" for="password">Contraseña</label><input class="dash-input" id="password" type="password" autocomplete="current-password" required placeholder="Tu contraseña"><p id="login-error" class="form-error" role="alert"></p><button class="btn btn-gold btn-wide" id="login-submit" type="submit">Iniciar sesión <span>→</span></button></form><p class="demo-note">El acceso debe ser creado y autorizado previamente en Supabase. No existe una cuenta predeterminada.</p></section>
+<section id="dashboard-view" class="hidden"><div class="dash-heading"><div><p class="eyebrow">RESUMEN GENERAL</p><h1>Vista de <span>resultados</span></h1><p class="muted" id="welcome-text">Información actualizada desde el servidor.</p></div><button id="refresh-btn" class="btn btn-outline btn-small" type="button">↻ Actualizar</button></div>
+<div id="dash-error" class="admin-warning hidden" role="alert"></div><div class="stats-grid dash-stats"><article class="stat-card"><span>Participantes registrados</span><strong id="stat-total">—</strong><small>Total de carnés únicos</small></article><article class="stat-card"><span>Evaluaciones finalizadas</span><strong id="stat-finished">—</strong><small id="finished-rate">—</small></article><article class="stat-card"><span>En progreso</span><strong id="stat-pending">—</strong><small>Participantes sin finalizar</small></article><article class="stat-card"><span>Promedio general</span><strong id="stat-average">—/10</strong><small id="stat-graded">Evaluaciones calificadas</small></article></div>
+<section class="dash-section"><div class="section-title-row"><div><p class="eyebrow">SEGUIMIENTO</p><h2>Participantes</h2></div><button id="export-btn" class="btn btn-gold btn-small" type="button">↓ Exportar CSV</button></div><div class="filters"><label class="sr-only" for="search-input">Buscar participante</label><input id="search-input" class="dash-input" type="search" placeholder="Buscar por nombre o carné…"><label class="sr-only" for="status-filter">Filtrar estado</label><select id="status-filter" class="dash-input"><option value="all">Todos los estados</option><option value="submitted">Finalizados</option><option value="in_progress">En progreso</option><option value="revoked">Acceso revocado</option></select></div><div class="table-wrap"><table class="participants-table"><thead><tr><th>Participante</th><th>Carné</th><th>Estado</th><th>Nota</th><th>Registro</th><th></th></tr></thead><tbody id="participants-body"><tr><td colspan="6" class="empty-state">Cargando participantes…</td></tr></tbody></table></div><div class="table-footer"><span id="table-summary">—</span><div><button class="btn btn-outline btn-small" id="prev-page" type="button">← Anterior</button><button class="btn btn-outline btn-small" id="next-page" type="button">Siguiente →</button></div></div></section>
+<section class="dash-section"><div class="section-title-row"><div><p class="eyebrow">ESTRUCTURA</p><h2>Secciones de la evaluación</h2></div></div><div id="sections-list" class="admin-sections"></div></section>
+<section id="detail-panel" class="dash-section hidden"><div class="section-title-row"><div><p class="eyebrow">FICHA INDIVIDUAL</p><h2 id="detail-name">Participante</h2><p class="muted" id="detail-meta"></p></div><button id="close-detail" class="btn btn-outline btn-small" type="button">Cerrar ficha</button></div><div id="detail-summary" class="detail-summary"></div><h3>Respuestas</h3><div id="detail-answers" class="detail-answers"></div><h3>Historial de actividad</h3><div id="detail-history" class="detail-history"></div></section>
+</section><p class="dashboard-foot">Acceso restringido · Los datos se consultan mediante una función protegida del servidor.</p></main>
+<script src="../assets/js/supabase-config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./dashboard.js"></script></body></html>

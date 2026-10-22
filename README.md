@@ -44,3 +44,10 @@ Los códigos aceptan mayúsculas y minúsculas. Cambia estos códigos antes de u
 Esta copia pública omite deliberadamente las filas SQL que contienen la clave de respuestas y los hashes de los códigos de acceso. El backend de producción ya provisionado mantiene esos datos en Supabase. No uses esta copia pública como una restauración completa de una base de datos nueva sin cargar la clave de respuestas y configurar códigos de acceso por un canal privado y seguro.
 
 Nunca publiques `SUPABASE_SERVICE_ROLE_KEY`, claves secretas, tokens de sesión ni códigos de acceso en texto plano. La clave `sb_publishable_...` del frontend está diseñada para ser pública; la seguridad debe descansar en RLS y en el backend.
+
+## Dashboard administrativo
+
+- La interfaz está en `admin/index.html` y requiere una cuenta creada en Supabase Auth y un registro correspondiente en `public.admin_profiles`.
+- Las consultas administrativas pasan por la Edge Function `admin-api`; nunca se debe colocar la `service_role` key en el navegador.
+- Acciones incluidas: resumen de participantes, búsqueda y filtros, ficha individual, revisión de respuestas y actividad, y exportación CSV.
+- Antes de habilitarlo para uso real, despliega `supabase/functions/admin-api/`, crea el usuario administrativo en Supabase Auth y asigna su UUID a `public.admin_profiles` con rol `admin` mediante un canal de confianza.
