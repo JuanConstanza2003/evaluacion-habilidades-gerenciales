@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1d4a">
+  <title>Responder sección | Habilidades Gerenciales</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css">
+</head>
+<body>
+  <main class="page-wrap">
+    <header class="topbar">
+      <a class="icon-btn" href="progreso.html" aria-label="Volver al progreso">←</a>
+      <div class="mini-crest">Ψ</div>
+      <span id="section-counter" class="counter">SECCIÓN</span>
+    </header>
+    <section class="page-heading">
+      <p id="section-kicker" class="eyebrow">SECCIÓN</p>
+      <h1 id="section-title">Evaluación</h1>
+      <p id="section-description"></p>
+    </section>
+    <form id="answers-form">
+      <div id="question-list" class="question-list"></div>
+      <div class="submit-card">
+        <p>Revisa tus dos respuestas antes de guardar. Después de confirmar, no podrás modificar esta sección.</p>
+        <button class="btn btn-gold btn-wide" type="submit">Guardar respuestas <span>→</span></button>
+      </div>
+    </form>
+    <dialog id="confirm-dialog" class="confirm-dialog">
+      <div class="dialog-inner">
+        <div class="mini-crest">Ψ</div>
+        <h2>¿Guardar respuestas?</h2>
+        <p>Después de confirmar, no podrás modificar esta sección.</p>
+        <div class="dialog-actions">
+          <button id="cancel-confirm" class="btn btn-outline" type="button">Revisar</button>
+          <button id="confirm-save" class="btn btn-gold" type="button">Confirmar y guardar</button>
+        </div>
+      </div>
+    </dialog>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

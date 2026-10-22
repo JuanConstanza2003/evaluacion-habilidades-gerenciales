@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1d4a">
+  <meta name="description" content="Evaluación interactiva de habilidades gerenciales">
+  <title>Evaluación Dinámica | Habilidades Gerenciales</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero-card">
+      <div class="laurel" aria-hidden="true">❧</div>
+      <div class="crest" aria-hidden="true">Ψ</div>
+      <div class="laurel laurel-right" aria-hidden="true">❧</div>
+      <p class="eyebrow">TALLER INTERACTIVO</p>
+      <h1>Evaluación dinámica:<br><span>Habilidades Gerenciales</span></h1>
+      <p class="intro">Pon a prueba tus conocimientos y habilidades en el mundo gerencial.</p>
+      <div class="ornament"><span></span> ✦ <span></span></div>
+      <form id="registration-form" class="form-card">
+        <label class="field">
+          <span class="field-icon" aria-hidden="true">♙</span>
+          <span class="sr-only">Nombre completo</span>
+          <input id="full-name" name="fullName" autocomplete="name" placeholder="Nombre completo" required maxlength="120">
+        </label>
+        <label class="field">
+          <span class="field-icon" aria-hidden="true">✉</span>
+          <span class="sr-only">Carné estudiantil</span>
+          <input id="carnet" name="carnet" placeholder="Carné estudiantil" required maxlength="40" autocomplete="off">
+        </label>
+        <p id="form-error" class="form-error" role="alert"></p>
+        <button class="btn btn-gold btn-wide" type="submit">Iniciar actividad <span aria-hidden="true">→</span></button>
+      </form>
+    </section>
+  </main>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

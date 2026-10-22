@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1d4a">
+  <title>Tu progreso | Habilidades Gerenciales</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css">
+</head>
+<body>
+  <main class="page-wrap">
+    <header class="topbar">
+      <a class="icon-btn" href="index.html" aria-label="Volver">←</a>
+      <div class="mini-crest">Ψ</div>
+      <span id="progress-count" class="counter">0/5</span>
+    </header>
+    <section class="page-heading">
+      <p class="eyebrow">EVALUACIÓN DINÁMICA</p>
+      <h1>Tu <span>progreso</span></h1>
+      <p>Completa las secciones en orden. Al guardar tus respuestas, esa sección quedará cerrada.</p>
+    </section>
+    <div class="progress-track"><span id="progress-bar"></span></div>
+    <section id="sections-list" class="sections-list" aria-live="polite"></section>
+    <div class="final-card">
+      <h2>¿Terminaste las cinco secciones?</h2>
+      <p>Cuando todas estén completadas, podrás enviar la evaluación y consultar tu resultado.</p>
+      <button id="finish-btn" class="btn btn-gold btn-wide" disabled>Finalizar evaluación <span>→</span></button>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

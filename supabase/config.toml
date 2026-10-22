@@ -1,0 +1,4 @@
+project_id = "ibxlhoxalzjicmewhblc"
+
+[functions.student-api]
+verify_jwt = false

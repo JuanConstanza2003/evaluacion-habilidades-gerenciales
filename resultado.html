@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1d4a">
+  <title>Tu resultado | Habilidades Gerenciales</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <main class="page-wrap result-wrap">
+    <header class="result-heading">
+      <div class="crest" aria-hidden="true">Ψ</div>
+      <p class="eyebrow">EVALUACIÓN COMPLETADA</p>
+      <h1 id="result-title">Tu resultado <span>final</span></h1>
+      <p class="intro" id="result-summary">Has completado las diez preguntas de Habilidades Gerenciales.</p>
+    </header>
+
+    <section class="result-overview" aria-labelledby="score-heading">
+      <div class="score-panel">
+        <span class="score-star" aria-hidden="true">★</span>
+        <div><span id="score-heading">Puntuación final</span><strong id="final-score">— / 10</strong><small id="score-detail">Respuestas correctas</small></div>
+      </div>
+      <div class="score-progress" aria-label="Porcentaje de respuestas correctas">
+        <div class="score-progress-label"><span>Resultado</span><strong id="score-percent">0 %</strong></div>
+        <div class="progress-track"><span id="score-bar"></span></div>
+      </div>
+    </section>
+
+    <section class="feedback-section" aria-labelledby="feedback-title">
+      <div class="feedback-heading">
+        <p class="eyebrow">REPASO DE RESPUESTAS</p>
+        <h2 id="feedback-title">Tu retroalimentación</h2>
+        <p>Revisa cada pregunta, la respuesta que seleccionaste y, cuando sea necesario, la respuesta correcta.</p>
+      </div>
+      <div id="feedback-list" class="feedback-list"></div>
+    </section>
+
+    <div class="result-footer">
+      <p>“El liderazgo no se trata de ser el mejor, sino de sacar lo mejor de los demás.”</p>
+    </div>
+  </main>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
