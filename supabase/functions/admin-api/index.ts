@@ -18,11 +18,12 @@ Deno.serve(async req => {
     const auth = await guard(req); if ("response" in auth) return auth.response;
     const body = await req.json().catch(() => ({})); const action = String(body.action ?? "overview");
     if (action === "overview") {
-      const [t,f,p,s,sec] = await Promise.all([
-        db.from("participants").select("id",{count:"exact",head:true}), db.from("participants").select("id",{count:"exact",head:true}).eq("status","submitted"), db.from("participants").select("id",{count:"exact",head:true}).eq("status","in_progress"), db.from("evaluation_results").select("score"), db.from("sections").select("id,title,presenter,display_order,is_enabled").order("display_order")
-      ]); const err=t.error??f.error??p.error??s.error??sec.error; if(err) throw err;
+      const [t,f,p,s,sec,unlocks,submissions] = await Promise.all([
+        db.from("participants").select("id",{count:"exact",head:true}), db.from("participants").select("id",{count:"exact",head:true}).eq("status","submitted"), db.from("participants").select("id",{count:"exact",head:true}).eq("status","in_progress"), db.from("evaluation_results").select("score"), db.from("sections").select("id,title,presenter,display_order,is_enabled").order("display_order"), db.from("section_unlocks").select("section_id,participant_id"), db.from("section_submissions").select("section_id,participant_id,status")
+      ]); const err=t.error??f.error??p.error??s.error??sec.error??unlocks.error??submissions.error; if(err) throw err;
       const scores=(s.data??[]).map((x:any)=>Number(x.score)).filter(Number.isFinite); const avg=scores.length?scores.reduce((a:number,b:number)=>a+b,0)/scores.length:0;
-      return out({ role:auth.role,user:{email:auth.user.email},stats:{total:t.count??0,finished:f.count??0,pending:p.count??0,graded:scores.length,average:Number(avg.toFixed(2))},sections:sec.data??[] });
+      const sectionMetrics=(sec.data??[]).map((section:any)=>{const unlocked=(unlocks.data??[]).filter((x:any)=>x.section_id===section.id);const submitted=(submissions.data??[]).filter((x:any)=>x.section_id===section.id&&x.status==="completed");const unlockedIds=new Set(unlocked.map((x:any)=>x.participant_id));const submittedCount=new Set(submitted.map((x:any)=>x.participant_id).filter((id:string)=>unlockedIds.has(id))).size;return {...section,unlocked_count:unlockedIds.size,submitted_count:submittedCount,pending_count:Math.max(0,unlockedIds.size-submittedCount),completion_rate:unlockedIds.size?Math.round(submittedCount/unlockedIds.size*100):0};});
+      return out({ role:auth.role,user:{email:auth.user.email},stats:{total:t.count??0,finished:f.count??0,pending:p.count??0,graded:scores.length,average:Number(avg.toFixed(2))},sections:sectionMetrics });
     }
     if (action === "participants" || action === "export") {
       const search=String(body.search??"").trim().slice(0,80).replace(/[,%()]/g, ""); const status=String(body.status??"all"); const page=Math.max(1,Number(body.page)||1); const pageSize=Math.max(5,Math.min(100,Number(body.pageSize)||25));
