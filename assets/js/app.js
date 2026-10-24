@@ -35,6 +35,26 @@
     if (!response.ok) throw { status: response.status, ...data, message: data.message || "No se pudo completar la operación." };
     return data;
   }
+  let globalFormOpen = true;
+  const closedFormMessage = "La evaluación está cerrada. Ya no se admiten respuestas. Si ya habías iniciado, tus respuestas guardadas se conservarán.";
+  function applyFormStatus(isOpen, message) {
+    globalFormOpen = isOpen !== false;
+    const banner = document.querySelector("#form-status-banner");
+    if (banner) { banner.textContent = globalFormOpen ? "El formulario está activo. Puedes ingresar y enviar tus respuestas." : (message || closedFormMessage); banner.classList.toggle("hidden", globalFormOpen); banner.classList.toggle("is-closed", !globalFormOpen); banner.classList.toggle("is-open", globalFormOpen); }
+    const registration = document.querySelector("#registration-form");
+    if (registration) { registration.querySelectorAll("input,button[type='submit']").forEach(el => { el.disabled = !globalFormOpen; }); }
+    const answers = document.querySelector("#answers-form");
+    if (answers) { answers.querySelectorAll("input,button[type='submit'],#confirm-save").forEach(el => { el.disabled = !globalFormOpen; }); }
+    const finish = document.querySelector("#finish-btn");
+    if (finish) finish.disabled = !globalFormOpen || Number(finish.dataset.completedCount || 0) !== 5;
+    return globalFormOpen;
+  }
+  async function refreshGlobalFormStatus() {
+    try { const status = await api("form-status"); applyFormStatus(status.is_open, status.message); return status; }
+    catch (_) { return null; }
+  }
+  refreshGlobalFormStatus();
+  window.setInterval(refreshGlobalFormStatus, 12000);
   function showFormError(message) {
     const el = document.querySelector("#form-error");
     if (el) el.textContent = message || "";
@@ -79,6 +99,8 @@
       const carnet = document.querySelector("#carnet").value.trim();
       showFormError("");
       if (!fullName || !carnet) { showFormError("Escribe tu nombre completo y carné."); return; }
+      const status = await refreshGlobalFormStatus();
+      if (status && status.is_open === false) { showFormError(status.message || closedFormMessage); return; }
       submit.disabled = true;
       try {
         const result = await api("register", { full_name: fullName, carnet });
@@ -99,12 +121,14 @@
       try { state = await api("progress"); } catch (error) { routeError(error); return; }
       if (state.result) { location.href = "resultado.html"; return; }
       const completed = state.completed || [];
+      const formOpen = state.form_open !== false;
+      applyFormStatus(formOpen, state.form_message);
       const sections = state.sections || [];
       const nextSection = sections.find(s => !completed.includes(s.id));
       sectionsList.innerHTML = sections.map(section => {
         const complete = completed.includes(section.id);
         const isNext = !!nextSection && nextSection.id === section.id;
-        const available = isNext && section.is_enabled;
+        const available = formOpen && isNext && section.is_enabled;
         const status = complete ? "Completada" : available ? "Disponible" : "Bloqueada";
         const icon = complete ? "✓" : available ? "↗" : "🔒";
         return `<article class="section-card ${complete ? "is-complete" : ""} ${available ? "is-unlocked" : "is-locked"}">
@@ -117,10 +141,12 @@
       document.querySelector("#progress-count").textContent = `${completed.length}/5`;
       document.querySelector("#progress-bar").style.width = `${completed.length / 5 * 100}%`;
       const finish = document.querySelector("#finish-btn");
-      finish.disabled = completed.length !== 5;
+      finish.dataset.completedCount = String(completed.length);
+      finish.disabled = !formOpen || completed.length !== 5;
       sectionsList.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-unlock]");
         if (!button) return;
+        if (!globalFormOpen) { notify.error(closedFormMessage); return; }
         const id = Number(button.dataset.unlock);
         const input = document.querySelector(`[data-code="${id}"]`);
         const code = input.value.trim();
@@ -144,6 +170,7 @@
         }
       });
       finish.addEventListener("click", async () => {
+        if (!globalFormOpen) { notify.error(closedFormMessage); return; }
         if (completed.length !== 5) return;
         finish.disabled = true;
         try {
@@ -164,6 +191,7 @@
       try { state = await api("progress"); } catch (error) { routeError(error); return; }
       if (state.result || (state.completed || []).includes(id)) { location.href = state.result ? "resultado.html" : "progreso.html"; return; }
       const section = (state.sections || []).find(s => s.id === id);
+      if (state.form_open === false) { applyFormStatus(false, state.form_message); location.href = "progreso.html"; return; }
       if (!section || !section.questions?.length) { notify.error("No se encontró la sección solicitada."); location.href = "progreso.html"; return; }
       document.querySelector("#section-counter").textContent = `${id}/5`;
       document.querySelector("#section-kicker").textContent = `SECCIÓN ${id}`;
@@ -200,8 +228,8 @@
           sessionStorage.removeItem("hg_unlocked_section");
           dialog.close();
           location.href = "progreso.html";
-        } catch (error) { routeError(error); }
-        finally { button.disabled = false; }
+        } catch (error) { routeError(error); if (error?.error === "FORM_CLOSED") { applyFormStatus(false, error.message); notify.error(error.message || closedFormMessage); } }
+        finally { button.disabled = !globalFormOpen; }
       });
     })();
   }
